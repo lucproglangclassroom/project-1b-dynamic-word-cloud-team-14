@@ -16,7 +16,8 @@ finding suitable third-party libraries
 using libraries for logging and command-line argument parsing
 test-driven development (TDD) in Scala and the command line/Gitpod or IntelliJ IDEA
 Managing multiple dimensions of cognitive complexity
-Functional requirements
+```
+## Functional requirements
 ```
 ## Usage
 ```
