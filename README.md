@@ -19,8 +19,8 @@ Managing multiple dimensions of cognitive complexity
 ```
 ## Functional requirements
 ```
-## Usage
-```
+ Usage
+
 ./topwords --cloud-size howmany --length-at-least minlength --window-size lastnwords
 
 The defaults for these values are 10, 6, and 1000, respectively.
