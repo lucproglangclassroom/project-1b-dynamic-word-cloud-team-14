@@ -1,4 +1,4 @@
-package hellotest
+package topwords
 
 // example straight from scalatest.org
 
