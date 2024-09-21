@@ -16,10 +16,11 @@ finding suitable third-party libraries
 using libraries for logging and command-line argument parsing
 test-driven development (TDD) in Scala and the command line/Gitpod or IntelliJ IDEA
 Managing multiple dimensions of cognitive complexity
-Functional requirements
 ```
-## Usage
+## Functional requirements
 ```
+ Usage
+
 ./topwords --cloud-size howmany --length-at-least minlength --window-size lastnwords
 
 The defaults for these values are 10, 6, and 1000, respectively.
