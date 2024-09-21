@@ -24,23 +24,23 @@ class topwordsTest extends AnyFlatSpec with Suite:
 
     source.close()
   }
-  test("CounterClass should correctly count occurrences of each unique word in the array") {
+  test("Counter should correctly count occurrences of each unique word in the array") {
 
     val words = Array("apple", "banana", "apple", "orange", "banana", "apple")
     
-    val counter = new CounterClass(words)
+    val counter = new Counter(words)
     val result = counter.getWordCount
 
     // Assert
     assert(result == Map("apple" -> 3, "banana" -> 2, "orange" -> 1))
   }
 
-  test("CounterClass should handle an empty array") {
+  test("Counter should handle an empty array") {
 
     val emptyArray = Array.empty[String]
 
 
-    val counter = new CounterClass(emptyArray)
+    val counter = new Counter(emptyArray)
     val result = counter.getWordCount
 
     // Assert
@@ -52,7 +52,7 @@ class topwordsTest extends AnyFlatSpec with Suite:
     val singleWordArray = Array("apple")
 
 
-    val counter = new CounterClass(singleWordArray)
+    val counter = new Counter(singleWordArray)
     val result = counter.getWordCount
 
     // Assert
