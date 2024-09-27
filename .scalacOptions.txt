@@ -5,3 +5,4 @@
 -language:strictEquality
 -Yexplicit-nulls
 -Ysafe-init
+-Xlint:-deprecation
