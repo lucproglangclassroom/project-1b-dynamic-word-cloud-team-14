@@ -21,15 +21,15 @@ class MainTest extends AnyFlatSpec with Matchers {
     val elderberryCount = counter.getWordCount("elderberry")
 
     // Assertions
-    assert(appleCount == 1)
-    assert(bananaCount == 1)
+    assert(appleCount == -1) //apple and banana should have been evicted
+    assert(bananaCount == -1)
     assert(cherryCount == 1)
     assert(dateCount == 1)
-    assert(elderberryCount == -1) // "elderberry" should have been evicted
+    assert(elderberryCount == 1)
 
     // Check the size of the MapCounter
     val uniqueWordsCount = counter.getWords().size
-    assert(uniqueWordsCount == 4) // Only 4 unique words should remain
+    assert(uniqueWordsCount == 3) // Only 3 unique words should remain
   }
 
   it should "not exceed the specified window size" in {

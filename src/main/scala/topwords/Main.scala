@@ -77,7 +77,6 @@ object Main:
         counter.decrement(oldestWord)
       }
     }
-
     counter
   }
   // Helper method to print the word cloud
