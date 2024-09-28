@@ -12,8 +12,8 @@ libraryDependencies ++= Seq(
   "org.scalacheck" %% "scalacheck" % "1.18.0"  % Test,
   "org.apache.commons" % "commons-collections4" % "4.4",
   "com.lihaoyi" %% "mainargs" % "0.3.0",
-  "org.rogach" %% "scallop" % "5.1.0"
+  "org.rogach" %% "scallop" % "5.1.0",
 )
-
-
+testFrameworks += new TestFramework("org.scalatest.tools.Framework")
+ThisBuild / scalaVersion := "3.3.3"
 enablePlugins(JavaAppPackaging)

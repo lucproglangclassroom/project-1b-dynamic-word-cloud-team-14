@@ -22,7 +22,11 @@ class MapCounter extends topwords.Counter {
   def getWordCount() : Int = {
     scores.size
   }
-
+  // Method to increment the word count
+  def increment(word: String): Unit = {
+    scores.put(word, scores.getOrElse(word, 0) + 1)
+  }
+  
   // Decrement the word count and remove it if the count reaches 0
   def decrement(word: String): Unit = {
     if (scores.contains(word)) {

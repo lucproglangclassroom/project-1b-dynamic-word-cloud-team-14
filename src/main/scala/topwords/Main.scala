@@ -1,3 +1,4 @@
+
 package topwords
 
 import org.apache.commons.collections4.queue.CircularFifoQueue
@@ -62,6 +63,23 @@ object Main:
       if (Console.out.checkError()) sys.exit(1)
     }
 
+  def testSlidingQueue(words: Seq[String], windowSize: Int): MapCounter = {
+    val counter = new MapCounter()
+    val queue = scala.collection.mutable.Queue[String]()
+
+    for (word <- words) {
+      queue.enqueue(word)
+      // Use the increment method to update the word count
+      counter.increment(word)
+
+      if (queue.size > windowSize) {
+        val oldestWord = queue.dequeue()
+        counter.decrement(oldestWord)
+      }
+    }
+
+    counter
+  }
   // Helper method to print the word cloud
   private def printWordCloud(counter: MapCounter, cloudSize: Int): Unit = {
     val sortedWords = counter.getWords().toSeq.sortBy(-_._2).take(cloudSize)
