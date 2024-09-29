@@ -13,6 +13,8 @@ libraryDependencies ++= Seq(
   "org.apache.commons" % "commons-collections4" % "4.4",
   "com.lihaoyi" %% "mainargs" % "0.5.0",
   "org.rogach" %% "scallop" % "5.1.0",
+  "org.log4s" %% "log4s" % "1.10.0",
+  "org.slf4j" % "slf4j-simple" % "1.7.30"
 )
 
 enablePlugins(JavaAppPackaging)
