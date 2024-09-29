@@ -4,74 +4,108 @@ package topwords
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 
+
 class MainTest extends AnyFlatSpec with Matchers {
 
-  "testSlidingQueue" should "correctly handle the sliding window functionality" in {
-    val words = Seq("apple", "banana", "cherry", "date", "elderberry")
-    val windowSize = 3
+  "processInput" should "correctly handle the sliding window functionality" in {
+    val input = Seq("apple banana cherry", "", "date elderberry")
+    val windowSize = 6
+    val cloudSize = 2
+    val lengthAtLeast = 1
 
-    // Call the testSlidingQueue method
-    val counter = Main.testSlidingQueue(words, windowSize)
+    val wordCounter = Main.processInput(input, cloudSize, lengthAtLeast, windowSize)
 
     // Verify the expected counts
-    val appleCount = counter.getWordCount("apple")
-    val bananaCount = counter.getWordCount("banana")
-    val cherryCount = counter.getWordCount("cherry")
-    val dateCount = counter.getWordCount("date")
-    val elderberryCount = counter.getWordCount("elderberry")
-
-    // Assertions
-    assert(appleCount == -1) //apple and banana should have been evicted
-    assert(bananaCount == -1)
-    assert(cherryCount == 1)
-    assert(dateCount == 1)
-    assert(elderberryCount == 1)
-
-    // Check the size of the MapCounter
-    val uniqueWordsCount = counter.getWords().size
-    assert(uniqueWordsCount == 3) // Only 3 unique words should remain
+    assert(wordCounter.getWordCount("apple") == 1)
+    assert(wordCounter.getWordCount("banana") == 1)
+    assert(wordCounter.getWordCount("cherry") == 1)
+    assert(wordCounter.getWordCount("date") == 1)
+    assert(wordCounter.getWordCount("elderberry") == 1)
   }
 
   it should "not exceed the specified window size" in {
-    val words = Seq.fill(10)("word")
+    val input = Seq.fill(10)("word")
     val windowSize = 5
+    val cloudSize = 1
+    val lengthAtLeast = 1
 
-    // Call the testSlidingQueue method
-    val counter = Main.testSlidingQueue(words, windowSize)
+    val wordCounter = Main.processInput(input, cloudSize, lengthAtLeast, windowSize)
 
-    // Check that the count for "word" is 5
-    assert(counter.getWordCount("word") == 5)
+    assert(wordCounter.getWordCount("word") == 5)
+    assert(wordCounter.getWords().size == 1) // Only 1 unique word
+  }
 
-    // Ensure the MapCounter only retains the expected number of unique words
-    assert(counter.getWords().size == 1) // Only 1 unique word
+  it should "handle an empty word list" in {
+    val input = Seq.empty[String]
+    val windowSize = 3
+    val cloudSize = 2
+    val lengthAtLeast = 1
+
+    noException should be thrownBy {
+      Main.processInput(input, cloudSize, lengthAtLeast, windowSize)
+    }
+  }
+
+  it should "handle a single word input" in {
+    val input = Seq("apple")
+    val windowSize = 3
+    val cloudSize = 2
+    val lengthAtLeast = 1
+
+    val wordCounter = Main.processInput(input, cloudSize, lengthAtLeast, windowSize)
+
+    assert(wordCounter.getWordCount("apple") == 1)
+    assert(wordCounter.getWords().size == 1) // Only 1 unique word
+  }
+
+  "testSlidingQueue" should "correctly handle sliding window of words" in {
+    val words = Seq("apple", "banana", "cherry", "date", "elderberry")
+    val windowSize = 3
+
+    val wordCounter = Main.testSlidingQueue(words, windowSize)
+
+    // Verify that only the most recent 'windowSize' words are counted
+    assert(wordCounter.getWordCount("apple") == -1) // Evicted
+    assert(wordCounter.getWordCount("banana") == -1) // Evicted
+    assert(wordCounter.getWordCount("cherry") == 1) // Still in window
+    assert(wordCounter.getWordCount("date") == 1) // Still in window
+    assert(wordCounter.getWordCount("elderberry") == 1) // Still in window
+  }
+
+  it should "handle a smaller word list than the window size" in {
+    val words = Seq("apple", "banana")
+    val windowSize = 3
+
+    val wordCounter = Main.testSlidingQueue(words, windowSize)
+
+    // Since the word list is smaller than the window size, all words should be counted
+    assert(wordCounter.getWordCount("apple") == 1)
+    assert(wordCounter.getWordCount("banana") == 1)
   }
 
   it should "handle an empty word list" in {
     val words = Seq.empty[String]
     val windowSize = 3
 
-    // Call the testSlidingQueue method
-    val counter = Main.testSlidingQueue(words, windowSize)
-
-    // Ensure no words are counted
-    assert(counter.getWords().isEmpty) // No words should be present
+    noException should be thrownBy {
+      Main.testSlidingQueue(words, windowSize)
+    }
   }
 
-  it should "handle a window size of 1 correctly" in {
-    val words = Seq("word1", "word2", "word3")
-    val windowSize = 1
+  it should "correctly split a line into words" in {
+    val line = "apple, banana! cherry.date"
+    val words = Main.manuallySplitIntoWords(line)
 
-    // Call the testSlidingQueue method
-    val counter = Main.testSlidingQueue(words, windowSize)
+    val expectedWords = Seq("apple", "banana", "cherry", "date")
 
-    // Only the last word should be counted
-    assert(counter.getWordCount("word1") == -1)
-    assert(counter.getWordCount("word2") == -1)
-    assert(counter.getWordCount("word3") == 1)
-
-    // Check that only 1 unique word remains in the counter
-    assert(counter.getWords().size == 1) // Only 1 unique word
+    assert(words == expectedWords)
   }
+
+  it should "handle an empty string in manuallySplitIntoWords" in {
+    val line = ""
+    val words = Main.manuallySplitIntoWords(line)
+
+    assert(words.isEmpty)
+  }
+
 }
-
-

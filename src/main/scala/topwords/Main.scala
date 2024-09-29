@@ -1,15 +1,16 @@
+
 package topwords
 
 import org.log4s._
 import org.apache.commons.collections4.queue.CircularFifoQueue
 import scala.io.Source
 import impl.MapCounter
-import mainargs.{main, arg, ParserForMethods, Flag}
+import mainargs.{main, arg, ParserForMethods}
 import scala.language.unsafeNulls
 
 object Main:
-  private [this] val logger = org.log4s.getLogger
-
+  private[this] val logger = org.log4s.getLogger
+  // Main entry point for running the program
   @main
   def run(
            @arg(name = "cloud-size", short = 'c', doc = "Number of top words to display") cloudSize: Int,
@@ -17,65 +18,52 @@ object Main:
            @arg(name = "window-size", short = 'w', doc = "Size of the moving window for recent words") windowSize: Int
          ): Unit =
 
-    // Input Validation
+    // Input validation
     if (cloudSize <= 0 || lengthAtLeast <= 0 || windowSize <= 0) {
+
       logger.error("Invalid arguments: all arguments must be positive numbers.")
-      Console.err.println("All arguments must be positive numbers.")
-      sys.exit(1)
+      throw new IllegalArgumentException("All arguments must be positive numbers.")
     }
 
     logger.info(s"Starting with cloudSize: $cloudSize, lengthAtLeast: $lengthAtLeast, windowSize: $windowSize")
-
-    // Create a CircularFifoQueue to hold the last N words
-    val queue = new CircularFifoQueue[String](windowSize)
-
-    // Create an instance of MapCounter to track word counts
-    val wordCounter = new MapCounter()
-
-    // Print the prompt to the user
-    logger.info("Prompting user for input")
     println("Enter text (Ctrl+D to exit):")
 
-    // Use Source.stdin.getLines() to read input
-    Source.stdin.getLines().foreach { line =>
-      logger.debug(s"Processing line: $line")
-      val words = manuallySplitIntoWords(line)
+    // Reading from standard input
+    val inputLines = Source.stdin.getLines().toSeq
+    processInput(inputLines, cloudSize, lengthAtLeast, windowSize)
 
-      def safeDecrement(word: String | Null): Unit = {
-        Option(word).foreach { w =>
-          logger.debug(s"Decrementing word count for: $w")
-          wordCounter.decrement(w)
-        }
-      }
+  def processInput(lines: Seq[String], cloudSize: Int, lengthAtLeast: Int, windowSize: Int): MapCounter = {
+    val queue = new CircularFifoQueue[String](windowSize)
+    val wordCounter = new MapCounter()
 
-      words.foreach { word =>
-        // Filter words based on the length requirement
-        if (word.length >= lengthAtLeast) {
-          logger.debug(s"Word passed length filter: $word")
+    lines.foreach { line =>
+      if (line.trim.nonEmpty) {
+        logger.debug(s"Processing line: $line")
+        val words = manuallySplitIntoWords(line)
 
-          // Handle word eviction from the queue
-          if (queue.size == windowSize) {
-            val evictedWord = queue.poll()
-            logger.debug(s"Evicting word: $evictedWord")
-            safeDecrement(evictedWord)
+        words.foreach { word =>
+          if (word.length >= lengthAtLeast) {
+            logger.debug(s"Word passed length filter: $word")
+            if (queue.size == windowSize) {
+              val evictedWord = queue.poll()
+              logger.debug(s"Evicting word: $evictedWord")
+              safeDecrement(evictedWord, wordCounter)
+            }
+
+            queue.add(word)
+            wordCounter.account(word)
+            logger.debug(s"Word added to queue and counted: $word")
+            printWordCloud(wordCounter, cloudSize)
           }
-
-          // Add the new word to the queue and update its count in MapCounter
-          queue.add(word)
-          wordCounter.account(word)
-          logger.debug(s"Word added to queue and counted: $word")
-
-          // Print the word cloud of the top cloudSize words
-          printWordCloud(wordCounter, cloudSize)
         }
-      }
-
-      // Terminate on I/O error (e.g., SIGPIPE)
-      if (Console.out.checkError()) {
-        logger.error("I/O error detected, terminating")
-        sys.exit(1)
+      } else {
+        logger.debug("Empty line detected, skipping.")
       }
     }
+
+    // Return the word counter for validation
+    wordCounter
+  }
 
   def testSlidingQueue(words: Seq[String], windowSize: Int): MapCounter = {
     logger.info(s"Testing sliding queue with window size: $windowSize")
@@ -96,8 +84,16 @@ object Main:
     counter
   }
 
-  // Helper method to print the word cloud
-  private def printWordCloud(counter: MapCounter, cloudSize: Int): Unit = {
+  // Safely decrement word count in MapCounter
+  def safeDecrement(word: String | Null, wordCounter: MapCounter): Unit = {
+    Option(word).foreach { w =>
+      logger.debug(s"Decrementing word count for: $w")
+      wordCounter.decrement(w)
+    }
+  }
+
+  // Method to print the top N words as a word cloud
+  def printWordCloud(counter: MapCounter, cloudSize: Int): Unit = {
     val sortedWords = counter.getWords().toSeq.sortBy(-_._2).take(cloudSize)
     val wordCloud = sortedWords.map { case (word, count) => s"$word: $count" }.mkString(" ")
     logger.info(s"Word cloud: $wordCloud")
@@ -105,9 +101,8 @@ object Main:
   }
 
   // Method to manually split a line into words based on spaces and punctuation
-  private def manuallySplitIntoWords(line: String): Seq[String] = {
+  def manuallySplitIntoWords(line: String): Seq[String] = {
     logger.debug(s"Splitting line: $line")
-
     val delimiters = Set(' ', ',', '.', ';', ':', '!', '?', '\t', '\n', '\r')
     val currentWord = new StringBuilder
     val words = scala.collection.mutable.ListBuffer[String]()
@@ -115,7 +110,7 @@ object Main:
     for (char <- line) {
       if (delimiters.contains(char)) {
         if (currentWord.nonEmpty) {
-          val word = currentWord.toString
+          val word = currentWord.toString()
           words += word
           logger.debug(s"Extracted word: $word")
           currentWord.clear()
@@ -127,12 +122,13 @@ object Main:
 
     // Add the last word if there's any remaining
     if (currentWord.nonEmpty) {
-      val word = currentWord.toString
+      val word = currentWord.toString()
       words += word
       logger.debug(s"Extracted final word: $word")
+      // $COVERAGE-ON$
     }
-
     logger.debug(s"Final word list: ${words.mkString(", ")}")
+    // $COVERAGE-ON$
     words.toList
   }
 
@@ -141,7 +137,6 @@ object Main:
     logger.info("Application started")
     ParserForMethods(this).runOrExit(args)
     logger.info("Application finished")
-    () // Explicitly return Unit
   }
-
 end Main
+
