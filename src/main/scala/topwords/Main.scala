@@ -20,49 +20,60 @@ object Main:
 
     // Input validation
     if (cloudSize <= 0 || lengthAtLeast <= 0 || windowSize <= 0) {
-
       logger.error("Invalid arguments: all arguments must be positive numbers.")
       throw new IllegalArgumentException("All arguments must be positive numbers.")
     }
 
     logger.info(s"Starting with cloudSize: $cloudSize, lengthAtLeast: $lengthAtLeast, windowSize: $windowSize")
-    println("Enter text (Ctrl+D to exit):")
 
-    // Reading from standard input
-    val inputLines = Source.stdin.getLines().toSeq
-    processInput(inputLines, cloudSize, lengthAtLeast, windowSize)
+    // Check if input is piped or from stdin
+    if (System.in.available() > 0) {
+      logger.info("Reading input from pipe")
+      val wordCounter = new MapCounter()
+      val queue = new CircularFifoQueue[String](windowSize)
 
-  def processInput(lines: Seq[String], cloudSize: Int, lengthAtLeast: Int, windowSize: Int): MapCounter = {
-    val queue = new CircularFifoQueue[String](windowSize)
-    val wordCounter = new MapCounter()
+      Source.stdin.getLines().foreach { line =>
+        processLine(line, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+      }
+    } else {
+      println("Enter text (Ctrl+D to exit):")
 
-    lines.foreach { line =>
-      if (line.trim.nonEmpty) {
-        logger.debug(s"Processing line: $line")
-        val words = manuallySplitIntoWords(line)
+      // Process user input from standard input interactively
+      val wordCounter = new MapCounter()
+      val queue = new CircularFifoQueue[String](windowSize)
 
-        words.foreach { word =>
-          if (word.length >= lengthAtLeast) {
-            logger.debug(s"Word passed length filter: $word")
-            if (queue.size == windowSize) {
-              val evictedWord = queue.poll()
-              logger.debug(s"Evicting word: $evictedWord")
-              safeDecrement(evictedWord, wordCounter)
-            }
-
-            queue.add(word)
-            wordCounter.account(word)
-            logger.debug(s"Word added to queue and counted: $word")
-            printWordCloud(wordCounter, cloudSize)
-          }
-        }
-      } else {
-        logger.debug("Empty line detected, skipping.")
+      Source.stdin.getLines().foreach { line =>
+        processLine(line, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
       }
     }
 
-    // Return the word counter for validation
-    wordCounter
+  // Process each input line
+  def processLine(line: String, wordCounter: MapCounter, queue: CircularFifoQueue[String],
+                  cloudSize: Int, lengthAtLeast: Int, windowSize: Int): Unit = {
+    if (line.trim.nonEmpty) {
+      logger.debug(s"Processing line: $line")
+      val words = manuallySplitIntoWords(line)
+
+      words.foreach { word =>
+        if (word.length >= lengthAtLeast) {
+          logger.debug(s"Word passed length filter: $word")
+
+          // Evict and decrement word count if the window size is exceeded
+          if (queue.size == windowSize) {
+            val evictedWord = queue.poll()
+            logger.debug(s"Evicting word: $evictedWord")
+            safeDecrement(evictedWord, wordCounter)
+          }
+
+          queue.add(word)
+          wordCounter.account(word)
+          logger.debug(s"Word added to queue and counted: $word")
+          printWordCloud(wordCounter, cloudSize)
+        }
+      }
+    } else {
+      logger.debug("Empty line detected, skipping.")
+    }
   }
 
   def testSlidingQueue(words: Seq[String], windowSize: Int): MapCounter = {
@@ -125,10 +136,8 @@ object Main:
       val word = currentWord.toString()
       words += word
       logger.debug(s"Extracted final word: $word")
-      // $COVERAGE-ON$
     }
     logger.debug(s"Final word list: ${words.mkString(", ")}")
-    // $COVERAGE-ON$
     words.toList
   }
 
