@@ -140,8 +140,7 @@ object Main:
     logger.debug(s"Final word list: ${words.mkString(", ")}")
     words.toList
   }
-
-  // This main method is necessary for the application to run
+  
   def main(args: Array[String]): Unit = {
     logger.info("Application started")
     ParserForMethods(this).runOrExit(args)
