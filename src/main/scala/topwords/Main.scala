@@ -114,7 +114,17 @@ object Main:
   // Method to manually split a line into words based on spaces and punctuation
   def manuallySplitIntoWords(line: String): Seq[String] = {
     logger.debug(s"Splitting line: $line")
-    val delimiters = Set(' ', ',', '.', ';', ':', '!', '?', '\t', '\n', '\r')
+    val delimiterPattern = "[A-Za-z0-9]+".r //should match all instances of one or more word characters
+    val words = delimiterPattern.findAllIn(line).toSeq //this uses a matchIterator to do the actual work then immediately converts to a seq
+
+    // for (word <- words) {
+    //   logger.debug(s"Extracted word: $word")
+    // }
+    // logger.debug(s"Final word list: ${words.mkString(", ")}")
+    words
+    
+    //Proj 1b version:
+    /*val delimiters = Set(' ', ',', '.', ';', ':', '!', '?', '\t', '\n', '\r')
     val currentWord = new StringBuilder
     val words = scala.collection.mutable.ListBuffer[String]()
 
@@ -128,17 +138,16 @@ object Main:
         }
       } else {
         currentWord += char
-      }
-    }
+      }*/
 
-    // Add the last word if there's any remaining
+    /*// Add the last word if there's any remaining
     if (currentWord.nonEmpty) {
       val word = currentWord.toString()
       words += word
       logger.debug(s"Extracted final word: $word")
     }
     logger.debug(s"Final word list: ${words.mkString(", ")}")
-    words.toList
+    words.toList*/
   }
   
   def main(args: Array[String]): Unit = {
