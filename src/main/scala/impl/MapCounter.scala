@@ -2,11 +2,12 @@ package impl
 
 import org.log4s._
 import scala.collection.mutable.Map
+//import scala.collection.immutable.Map
 
 class MapCounter extends topwords.Counter {
 
   private val logger = getLogger("Main")
-  private val scores = scala.collection.mutable.Map[String, Int]()
+  private val scores = scala.collection.mutable.Map[String, Int]() //TODO: mutable structure
 
   // Method to add or update the count of a word
   def account(word: String): Int = {

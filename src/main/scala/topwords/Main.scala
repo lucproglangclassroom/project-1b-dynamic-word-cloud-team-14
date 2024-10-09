@@ -30,7 +30,7 @@ object Main:
     if (System.in.available() > 0) {
       logger.info("Reading input from pipe")
       val wordCounter = new MapCounter()
-      val queue = new CircularFifoQueue[String](windowSize)
+      val queue = new CircularFifoQueue[String](windowSize) //TODO: mutable structure
 
       Source.stdin.getLines().foreach { line =>
         processLine(line, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
@@ -40,7 +40,7 @@ object Main:
 
       // Process user input from standard input interactively
       val wordCounter = new MapCounter()
-      val queue = new CircularFifoQueue[String](windowSize)
+      val queue = new CircularFifoQueue[String](windowSize) //TODO: mutable structure
 
       Source.stdin.getLines().foreach { line =>
         processLine(line, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
@@ -79,7 +79,7 @@ object Main:
   def testSlidingQueue(words: Seq[String], windowSize: Int): MapCounter = {
     logger.info(s"Testing sliding queue with window size: $windowSize")
     val counter = new MapCounter()
-    val queue = scala.collection.mutable.Queue[String]()
+    val queue = scala.collection.mutable.Queue[String]() //TODO: mutable structure
 
     for (word <- words) {
       logger.debug(s"Processing word: $word")
@@ -106,7 +106,7 @@ object Main:
   // Method to print the top N words as a word cloud
   def printWordCloud(counter: MapCounter, cloudSize: Int): Unit = {
     val sortedWords = counter.getWords().toSeq.sortBy(-_._2).take(cloudSize)
-    val wordCloud = sortedWords.map { case (word, count) => s"$word: $count" }.mkString(" ")
+    val wordCloud = sortedWords.map { case (word, count) => s"$word: $count" }.mkString(" ") //TODO: likely a mutable structure
     logger.info(s"Word cloud: $wordCloud")
     println(wordCloud)
   }
@@ -122,32 +122,6 @@ object Main:
     // }
     // logger.debug(s"Final word list: ${words.mkString(", ")}")
     words
-    
-    //Proj 1b version:
-    /*val delimiters = Set(' ', ',', '.', ';', ':', '!', '?', '\t', '\n', '\r')
-    val currentWord = new StringBuilder
-    val words = scala.collection.mutable.ListBuffer[String]()
-
-    for (char <- line) {
-      if (delimiters.contains(char)) {
-        if (currentWord.nonEmpty) {
-          val word = currentWord.toString()
-          words += word
-          logger.debug(s"Extracted word: $word")
-          currentWord.clear()
-        }
-      } else {
-        currentWord += char
-      }*/
-
-    /*// Add the last word if there's any remaining
-    if (currentWord.nonEmpty) {
-      val word = currentWord.toString()
-      words += word
-      logger.debug(s"Extracted final word: $word")
-    }
-    logger.debug(s"Final word list: ${words.mkString(", ")}")
-    words.toList*/
   }
   
   def main(args: Array[String]): Unit = {
