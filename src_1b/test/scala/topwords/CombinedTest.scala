@@ -103,7 +103,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val wordCounter = new MapCounter()
     val queue = new CircularFifoQueue[String](windowSize)
 
-    OldMain.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+    Main.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
 
     // Verify the expected counts
     assert(wordCounter.getWordCount("apple") == 1)
@@ -115,7 +115,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     System.setIn(new ByteArrayInputStream(input.getBytes))
 
     // Call the run method with valid arguments
-    OldMain.run(1, 1, 3)
+    Main.run(1, 1, 3)
 
     // Verify the expected counts in the word counter
     val wordCounter = new MapCounter()
@@ -131,17 +131,17 @@ class CombinedTest extends AnyFlatSpec with Matchers {
 
   it should "handle invalid input arguments gracefully" in {
     val caught = intercept[IllegalArgumentException] {
-      OldMain.run(0, 1, 1) // Invalid cloudSize
+      Main.run(0, 1, 1) // Invalid cloudSize
     }
     assert(caught.getMessage == "All arguments must be positive numbers.")
 
     val caught2 = intercept[IllegalArgumentException] {
-      OldMain.run(1, 0, 1) // Invalid lengthAtLeast
+      Main.run(1, 0, 1) // Invalid lengthAtLeast
     }
     assert(caught2.getMessage == "All arguments must be positive numbers.")
 
     val caught3 = intercept[IllegalArgumentException] {
-      OldMain.run(1, 1, 0) // Invalid windowSize
+      Main.run(1, 1, 0) // Invalid windowSize
     }
     assert(caught3.getMessage == "All arguments must be positive numbers.")
   }
@@ -151,7 +151,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     System.setIn(new ByteArrayInputStream(input.getBytes))
 
     // Call the run method with valid arguments
-    OldMain.run(2, 1, 3)
+    Main.run(2, 1, 3)
 
     // Verify the expected counts in the word counter
     val wordCounter = new MapCounter()
@@ -177,7 +177,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val windowSize = 5
 
     noException should be thrownBy {
-      OldMain.run(cloudSize, lengthAtLeast, windowSize)
+      Main.run(cloudSize, lengthAtLeast, windowSize)
     }
   }
 
@@ -190,7 +190,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val wordCounter = new MapCounter()
     val queue = new CircularFifoQueue[String](windowSize)
 
-    OldMain.processLine(input.trim, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+    Main.processLine(input.trim, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
 
     // Verify that the long string is processed correctly
     assert(wordCounter.getWordCount("a") == 5)
@@ -204,7 +204,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val wordCounter = new MapCounter()
     val queue = new CircularFifoQueue[String](windowSize)
 
-    OldMain.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+    Main.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
 
     // Only "bb", "ccc", and "dddd" should be counted
     assert(wordCounter.getWordCount("a") == -1)
@@ -222,7 +222,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val queue = new CircularFifoQueue[String](windowSize)
 
     input.split(" ").foreach { word =>
-      OldMain.processLine(word, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+      Main.processLine(word, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
     }
 
     assert(wordCounter.getWordCount("word") == 5)
@@ -238,7 +238,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val queue = new CircularFifoQueue[String](windowSize)
 
     noException should be thrownBy {
-      OldMain.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+      Main.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
     }
   }
 
@@ -250,7 +250,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val wordCounter = new MapCounter()
     val queue = new CircularFifoQueue[String](windowSize)
 
-    OldMain.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
+    Main.processLine(input, wordCounter, queue, cloudSize, lengthAtLeast, windowSize)
 
     assert(wordCounter.getWordCount("apple") == 1)
     assert(wordCounter.getWords().size == 1) // Only 1 unique word
@@ -260,7 +260,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val words = Seq("apple", "banana", "cherry", "date", "elderberry")
     val windowSize = 3
 
-    val wordCounter = OldMain.testSlidingQueue(words, windowSize)
+    val wordCounter = Main.testSlidingQueue(words, windowSize)
 
     // Verify that only the most recent 'windowSize' words are counted
     assert(wordCounter.getWordCount("apple") == -1) // Evicted
@@ -274,7 +274,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val words = Seq("apple", "banana")
     val windowSize = 3
 
-    val wordCounter = OldMain.testSlidingQueue(words, windowSize)
+    val wordCounter = Main.testSlidingQueue(words, windowSize)
 
     // Since the word list is smaller than the window size, all words should be counted
     assert(wordCounter.getWordCount("apple") == 1)
@@ -286,13 +286,13 @@ class CombinedTest extends AnyFlatSpec with Matchers {
     val windowSize = 3
 
     noException should be thrownBy {
-      OldMain.testSlidingQueue(words, windowSize)
+      Main.testSlidingQueue(words, windowSize)
     }
   }
 
   it should "correctly split a line into words" in {
     val line = "apple, banana! cherry.date"
-    val words = OldMain.manuallySplitIntoWords(line)
+    val words = Main.manuallySplitIntoWords(line)
 
     val expectedWords = Seq("apple", "banana", "cherry", "date")
 
@@ -301,7 +301,7 @@ class CombinedTest extends AnyFlatSpec with Matchers {
 
   it should "handle an empty string in manuallySplitIntoWords" in {
     val line = ""
-    val words = OldMain.manuallySplitIntoWords(line)
+    val words = Main.manuallySplitIntoWords(line)
 
     assert(words.isEmpty)
   }

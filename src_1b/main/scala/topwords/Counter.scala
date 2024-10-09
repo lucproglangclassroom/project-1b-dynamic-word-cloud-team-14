@@ -1,4 +1,3 @@
-
 package topwords
 import scala.collection.mutable.Map
 
