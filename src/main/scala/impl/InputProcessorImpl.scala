@@ -51,28 +51,9 @@ class InputProcessorImpl extends topwords.InputProcessor{
 
   def manuallySplitIntoWords(line: String): Seq[String] = {
     logger.debug(s"Splitting line: $line")
-    val delimiters = Set(' ', ',', '.', ';', ':', '!', '?', '\t', '\n', '\r')
-    val currentWord = new StringBuilder
-    val words = ListBuffer[String]()
-
-    for (char <- line) {
-      if (delimiters.contains(char)) {
-        if (currentWord.nonEmpty) {
-          val word = currentWord.toString()
-          words += word
-          logger.debug(s"Extracted word: $word")
-          currentWord.clear()
-        }
-      } else {
-        currentWord += char
-      }
-    }
-
-    if (currentWord.nonEmpty) {
-      words += currentWord.toString()
-    }
-
-    words.toSeq
+    val delimiterPattern = "[A-Za-z0-9]+".r //should match all instances of one or more word characters
+    val words = delimiterPattern.findAllIn(line).toSeq //this uses a matchIterator to do the actual work then immediately converts to a seq
+    words
   }
 
 
