@@ -2,23 +2,45 @@
 package impl
 
 import org.log4s._
-import scala.collection.mutable.Map
+import scala.collection.immutable.Map
 
-class MapCounter extends topwords.Counter {
+/** mapcounter originally uses mutable map, change so it runs
+ in a purely functional way that does not use any mutable state **/
+
+/** basically get rid of any counter variable. update to use immutable.map
+instead of muttable.Map**/
+
+/** change account, increment, and decrement as they all use counter
+variables **/
+
+// change to use immuatble.Map
+
+// counter trait for account, increment, and decrement
+trait Counter {
+  def account(word: String): (Counter, Int)
+  def increment(word: String): Counter
+  def decrement(word: String): Counter
+}
+
+class MapCounter(scores: Map[String, Int] = Map.empty) extends Counter {
 
   private val logger = getLogger("Main")
-  private val scores = scala.collection.mutable.Map[String, Int]()
 
-
-  def account(word: String): Int = {
-    if (scores.contains(word)) {
-      scores(word) += 1
-      logger.debug(s"Incremented count for word: $word, new count: ${scores(word)}")
-    } else {
-      scores(word) = 1
-      logger.debug(s"Added new word: $word with count: 1")
+  // def account is mutable, change so it does not use any mutable state.
+  override def account(word: String): (Counter, Int) = {
+    
+    // account for a word
+    // update count if word is present or add if not present
+    val newScores = scores.updatedWith(word) {
+      
+      // up the count by 1
+      case Some(count) => Some(count+1) 
+      // add word with count 1 if doesnt exist
+      case None => Some(1)
     }
-    getWordCount(word)
+
+    logger.debug(s"Updated count for is: $word, new count: ${newScores(word)}")
+    (new MapCounter(newScores), newScores(word))
   }
 
 
@@ -41,23 +63,38 @@ class MapCounter extends topwords.Counter {
     size
   }
 
+  // increment count for word using immutable map
+  override def increment(word: String): Counter = {
 
-  def increment(word: String): Unit = {
-    val newCount = scores.getOrElse(word, 0) + 1
-    scores.put(word, newCount)
-    logger.debug(s"Incremented word: $word, new count: $newCount")
+    // update
+    val newScores = scores.updatedWith(word) {
+      // up the count by 1
+      case Some(count) => Some(count+1)
+      // add word if it doesnt exist
+      case None => Some(1)
+    }
+
+    logger.debug(s"Incremented word is: $word, new count: ${newScores(word)}")
+    
+    new MapCounter(newScores)
+
   }
 
+  // update to make immutable
+  // decrease count for word
+  override def decrement(word: String): Counter = {
 
-  def decrement(word: String): Unit = {
-    if (scores.contains(word)) {
-      scores(word) -= 1
-      logger.debug(s"Decremented count for word: $word, new count: ${scores(word)}")
+    //update
+    val newScores = scores.updatedWith(word) {
 
-      if (scores(word) <= 0) {
-        scores.remove(word)
-        logger.debug(s"Removed word: $word as its count reached 0")
-      }
+      // decrease count by 1
+      case Some(count) if count > 1 => Some(count-1)
+      // remove word if count doesnt exist
+      case _ => None
     }
+
+    logger.debug(s"Decremented count for word is: $word, new count: ${newScores.getOrElse(word, 0)}")
+
+    new MapCounter(newScores)
   }
 }
