@@ -26,6 +26,7 @@ object Main:
 
     logger.info(s"Starting with cloudSize: $cloudSize, lengthAtLeast: $lengthAtLeast, windowSize: $windowSize")
 
+
     // Check if input is piped or from stdin
     if (System.in.available() > 0) {
       logger.info("Reading input from pipe")
