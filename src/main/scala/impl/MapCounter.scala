@@ -16,13 +16,8 @@ variables **/
 // change to use immuatble.Map
 
 // counter trait for account, increment, and decrement
-trait Counter {
-  def account(word: String): (Counter, Int)
-  def increment(word: String): Counter
-  def decrement(word: String): Counter
-}
 
-class MapCounter(scores: Map[String, Int] = Map.empty) extends Counter {
+class MapCounter(scores: Map[String, Int] = Map.empty) extends topwords.Counter {
 
   private val logger = getLogger("Main")
 
@@ -64,7 +59,7 @@ class MapCounter(scores: Map[String, Int] = Map.empty) extends Counter {
   }
 
   // increment count for word using immutable map
-  override def increment(word: String): Counter = {
+  override def increment(word: String): topwords.Counter = {
 
     // update
     val newScores = scores.updatedWith(word) {
@@ -82,7 +77,7 @@ class MapCounter(scores: Map[String, Int] = Map.empty) extends Counter {
 
   // update to make immutable
   // decrease count for word
-  override def decrement(word: String): Counter = {
+  override def decrement(word: String): topwords.Counter = {
 
     //update
     val newScores = scores.updatedWith(word) {
