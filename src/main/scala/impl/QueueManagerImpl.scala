@@ -18,8 +18,8 @@ class QueueManagerImpl(val windowSize: Int, val queue: List[String] = List.empty
       if (queue.size >= windowSize) queue.tail :+ word
       else queue :+ word
 
-    val added = newQueue.contains(word)
-    if (added) {
+
+    if (newQueue.contains(word)) {
       logger.debug(s"Successfully added word: $word to the queue")
     } else {
       logger.warn(s"Failed to add word: $word to the queue, queue may be full")

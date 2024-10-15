@@ -33,8 +33,8 @@ class MapCounter(scores: Map[String, Int] = Map.empty) extends topwords.Counter 
       // add word with count 1 if doesnt exist
       case None => Some(1)
     }
-
-    logger.debug(s"Updated count for is: $word, new count: ${newScores(word)}")
+    val newCount = newScores(word)
+    logger.debug(s"Updated count for is: $word, new count: $newCount")
     (new MapCounter(newScores), newScores(word))
   }
 

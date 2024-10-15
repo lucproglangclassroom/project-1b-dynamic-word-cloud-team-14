@@ -7,39 +7,40 @@ import scala.language.unsafeNulls
 class InputProcessorImpl extends topwords.InputProcessor {
   private[this] val logger = org.log4s.getLogger
 
-  // Modify processLine to return updated queue and word counter
+  // Process a line and return a new word counter and queue
   def processLine(line: String, wordCounter: MapCounter, queue: QueueManagerImpl,
                   cloudSize: Int, lengthAtLeast: Int, windowSize: Int): (MapCounter, QueueManagerImpl) = {
     if (line.trim.nonEmpty) {
       logger.debug(s"Processing line: $line")
       val words = manuallySplitIntoWords(line)
 
-      // Keep track of the updated state
-      var currentQueue = queue
-      var currentCounter = wordCounter
-
-      words.foreach { word =>
-        if (word.length >= lengthAtLeast) {
+      // Process words and maintain immutable state
+      val (updatedCounter, updatedQueue) = words.foldLeft((wordCounter, queue)) {
+        case ((currentCounter, currentQueue), word) if word.length >= lengthAtLeast =>
           logger.debug(s"Word passed length filter: $word")
 
           // Evict and decrement word count if the window size is exceeded
-          if (currentQueue.isFull()) {
+          val (newQueue, decrementedCounter) = if (currentQueue.isFull()) {
             val (evictedWord, newQueue) = currentQueue.evictOldest()
-            evictedWord.foreach { ew =>
+            evictedWord.fold((currentQueue, currentCounter)) { ew =>
               logger.debug(s"Evicting word: $ew")
-              currentCounter = safeDecrement(ew, currentCounter)
+              (newQueue, safeDecrement(ew, currentCounter))
             }
-            currentQueue = newQueue.asInstanceOf[QueueManagerImpl]
+          } else {
+            (currentQueue, currentCounter)
           }
 
-          currentQueue = currentQueue.addWord(word).asInstanceOf[QueueManagerImpl]
-          currentCounter = currentCounter.account(word)._1 // Update the word counter
+          // Add word to the queue and update the counter
+          val nextQueue = newQueue.addWord(word).asInstanceOf[QueueManagerImpl]
+          val nextCounter:MapCounter = decrementedCounter.account(word)._1 // Update the word counter
           logger.debug(s"Word added to queue and counted: $word")
-          //printWordCloud(currentCounter, cloudSize)
-        }
+
+          (nextCounter, nextQueue)
+
+        case (state, _) => state // Skip words that do not meet length criteria
       }
 
-      (currentCounter, currentQueue)
+      (updatedCounter, updatedQueue)
     } else {
       logger.debug("Empty line detected, skipping.")
       (wordCounter, queue)
@@ -56,14 +57,12 @@ class InputProcessorImpl extends topwords.InputProcessor {
   def manuallySplitIntoWords(line: String): Seq[String] = {
     logger.debug(s"Splitting line: $line")
     val delimiterPattern = "[A-Za-z0-9]+".r
-    val words = delimiterPattern.findAllIn(line).toSeq
-    words
+    delimiterPattern.findAllIn(line).toSeq
   }
 
   private def safeDecrement(word: String | Null, wordCounter: MapCounter): MapCounter = {
     Option(word).map { w =>
       logger.debug(s"Decrementing word count for: $w")
-
       wordCounter.decrement(w).asInstanceOf[MapCounter]
     }.getOrElse(wordCounter)
   }

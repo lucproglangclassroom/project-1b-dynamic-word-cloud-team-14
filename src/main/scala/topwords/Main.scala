@@ -7,7 +7,7 @@ import impl.{InputProcessorImpl, MapCounter, QueueManagerImpl}
 import scala.language.unsafeNulls
 
 object Main:
-  private[this] val logger = org.log4s.getLogger
+  private[this] val logger = getLogger
 
   @main
   def run(
@@ -24,31 +24,30 @@ object Main:
     logger.info(s"Starting with cloudSize: $cloudSize, lengthAtLeast: $lengthAtLeast, windowSize: $windowSize")
 
     val inputProcessor = new InputProcessorImpl()
-    val wordCounter = new MapCounter()
-    val queueManager = new QueueManagerImpl(windowSize)
+    val initialWordCounter = new MapCounter()
+    val initialQueueManager = new QueueManagerImpl(windowSize)
 
     if (System.in.available() > 0) {
       logger.info("Reading input from pipe")
-      processInput(queueManager, wordCounter, inputProcessor, cloudSize, lengthAtLeast)
+      processInput(initialQueueManager, initialWordCounter, inputProcessor, cloudSize, lengthAtLeast)
     } else {
       println("Enter text (Ctrl+D to exit):")
-      processInput(queueManager, wordCounter, inputProcessor, cloudSize, lengthAtLeast)
+      processInput(initialQueueManager, initialWordCounter, inputProcessor, cloudSize, lengthAtLeast)
     }
 
     println("Final word cloud:")
-    printWordCloud(wordCounter, cloudSize)
+    printWordCloud(initialWordCounter, cloudSize)
 
   private def processInput(queueManager: QueueManagerImpl, wordCounter: MapCounter,
                            inputProcessor: InputProcessorImpl, cloudSize: Int, lengthAtLeast: Int): Unit = {
-    var currentWordCounter = wordCounter // Use var for reassignment
-    var currentQueueManager = queueManager // Use var for reassignment
 
-    Source.stdin.getLines().foreach { line =>
+    Source.stdin.getLines().foldLeft((wordCounter, queueManager)) { (acc, line) =>
+      val (currentWordCounter, currentQueueManager) = acc
       val (updatedWordCounter, updatedQueueManager) = inputProcessor.processLine(line, currentWordCounter,
         currentQueueManager, cloudSize, lengthAtLeast, currentQueueManager.windowSize)
-      currentWordCounter = updatedWordCounter
-      currentQueueManager = updatedQueueManager
-      printWordCloud(currentWordCounter, cloudSize)
+
+      printWordCloud(updatedWordCounter, cloudSize)
+      (updatedWordCounter, updatedQueueManager)
     }
   }
 
@@ -65,6 +64,7 @@ object Main:
     logger.info("Application finished")
   }
 end Main
+
 
 
 
