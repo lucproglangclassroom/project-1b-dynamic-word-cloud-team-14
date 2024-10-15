@@ -1,12 +1,12 @@
 
 package topwords
 
-import impl.MapCounter
+import impl.{MapCounter, QueueManagerImpl}
 import org.apache.commons.collections4.queue.CircularFifoQueue
 
 trait InputProcessor {
-  def processLine(line: String, wordCounter: MapCounter, queue: QueueManager,
-                  cloudSize: Int, lengthAtLeast: Int, windowSize: Int): Unit
+  def processLine(line: String, wordCounter: MapCounter, queue: QueueManagerImpl,
+                  cloudSize: Int, lengthAtLeast: Int, windowSize: Int): (MapCounter, QueueManagerImpl)
 
   def manuallySplitIntoWords(line: String): Seq[String]
   

@@ -13,7 +13,7 @@ class QueueManagerImpl(val windowSize: Int, val queue: List[String] = List.empty
 
   //the logic of adding and removing elements now returns new instances of QueueManagerImpl instead of modifying the state in place
   // Adding a word returns a new instance of QueueManagerImpl with the updated queue.
-  override def addWord(word: String): Unit = {
+  override def addWord(word: String): QueueManager = {
     val newQueue =
       if (queue.size >= windowSize) queue.tail :+ word
       else queue :+ word
