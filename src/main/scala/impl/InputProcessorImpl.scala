@@ -22,7 +22,7 @@ class InputProcessorImpl extends topwords.InputProcessor{
 
           // Evict and decrement word count if the window size is exceeded
           if (queue.isFull()) {
-            val (evictedWord, _) = queue.evictOldest()
+            val (evictedWord, newQueue) = queue.evictOldest()
             evictedWord.foreach { ew =>
               logger.debug(s"Evicting word: $ew")
               safeDecrement(ew, wordCounter)
@@ -30,9 +30,9 @@ class InputProcessorImpl extends topwords.InputProcessor{
           }
 
           queue.addWord(word)
-          wordCounter.account(word)
+          val (newWordCounter, _) = wordCounter.account(word)
           logger.debug(s"Word added to queue and counted: $word")
-          printWordCloud(wordCounter, cloudSize)
+          printWordCloud(newWordCounter, cloudSize)
         }
       }
     } else {

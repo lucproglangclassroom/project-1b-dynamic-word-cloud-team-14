@@ -30,7 +30,8 @@ class NewTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val counter = new MapCounter()
 
     // Increment the count for "world"
-    val updatedCounter = counter.account("world").asInstanceOf[MapCounter]
+    val (updatedCounterDeTuple, _) = counter.account("world")
+    val updatedCounter = updatedCounterDeTuple.asInstanceOf[MapCounter]
     val finalCounter = updatedCounter.decrement("world").asInstanceOf[MapCounter]
 
     // Verify that "world" is no longer in the map
@@ -52,8 +53,10 @@ class NewTest extends AnyFlatSpec with Matchers with MockitoSugar {
     val counter = new MapCounter()
 
     // Increment multiple words
-    val updatedCounter = counter.account("apple").asInstanceOf[MapCounter]
-    val updatedCounter2 = updatedCounter.account("banana").asInstanceOf[MapCounter]
+    val (updatedCounterDetuple, _) = counter.account("apple")
+    val updatedCounter = updatedCounterDetuple.asInstanceOf[MapCounter]
+    val (updatedCounter2Detuple, _) = updatedCounter.account("banana")
+    val updatedCounter2 = updatedCounter2Detuple.asInstanceOf[MapCounter]
 
     // Verify counts
     updatedCounter2.getWords() should contain("apple" -> 1)

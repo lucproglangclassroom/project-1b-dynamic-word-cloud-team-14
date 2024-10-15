@@ -27,7 +27,7 @@ class MapCounter(scores: Map[String, Int] = Map.empty) extends Counter {
   private val logger = getLogger("Main")
 
   // def account is mutable, change so it does not use any mutable state.
-  override def account(word: String): (Counter, Int) = {
+  override def account(word: String): (MapCounter, Int) = {
     
     // account for a word
     // update count if word is present or add if not present
