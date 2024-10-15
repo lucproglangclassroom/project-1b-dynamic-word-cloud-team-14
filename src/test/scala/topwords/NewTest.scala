@@ -7,6 +7,7 @@ import org.scalatestplus.mockito.MockitoSugar
 import org.mockito.Mockito._
 import impl.{InputProcessorImpl, MapCounter, QueueManagerImpl}
 import java.io.ByteArrayInputStream
+import scala.language.unsafeNulls
 
 class NewTest extends AnyFlatSpec with Matchers with MockitoSugar {
 
